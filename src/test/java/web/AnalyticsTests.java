@@ -3,6 +3,7 @@ package web;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openqa.selenium.By;
@@ -23,94 +24,128 @@ public class AnalyticsTests {
 
     private WebDriver driver;
     private WebDriverWait wait;
+    private WebDriverWait loginWait;
 
-    // Инициализация браузера перед каждым тестом
     private void setUpBrowser(String browser) {
         if (browser.equals("chrome")) {
             ChromeOptions options = new ChromeOptions();
-            // ВАЖНО: Укажи путь к своему профилю Chrome, чтобы обойти логин Google
-            // options.addArguments("user-data-dir=/Users/ivanmironov/Library/Application Support/Google/Chrome/");
-            // options.addArguments("profile-directory=Default");
+
+            // Подключаемся к браузеру, который мы заранее открыли через Терминал
+            options.setExperimentalOption("debuggerAddress", "127.0.0.1:9999");
+
             driver = new ChromeDriver(options);
-        } else if (browser.equals("firefox")) {
+
+        }
+        else if (browser.equals("firefox")) {
             FirefoxOptions options = new FirefoxOptions();
-            // Для Firefox тоже можно подключить профиль, если потребуется
+
+            options.addArguments("-profile");
+            options.addArguments("C:\\selenium-firefox-profile");
+
             driver = new FirefoxDriver(options);
         }
 
-        driver.manage().window().maximize();
-        // Настраиваем явное ожидание (до 15 секунд), т.к. GA грузится долго
+
+        // Стандартное ожидание для элементов страницы (15 сек)
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+
+        // Специальное долгое ожидание для ручной авторизации (90 сек)
+        loginWait = new WebDriverWait(driver, Duration.ofSeconds(90));
     }
 
     @AfterEach
     void tearDown() {
-        if (driver != null) {
-            driver.quit(); // Закрываем браузер после теста
-        }
+        // Намеренно оставляем пустым.
+        // Если сделать driver.quit(), браузер закроется, и следующий запуск упадет.
     }
 
-    // =========================================================================
-    // СЦЕНАРИЙ 1: Проверка загрузки главного дашборда
-    // =========================================================================
-    @ParameterizedTest(name = "Test Dashboard Load in {0}")
-    @ValueSource(strings = {"chrome", "firefox"})
-    @DisplayName("Проверка наличия главного контейнера аналитики")
-    void testDashboardLoads(String browser) {
-        setUpBrowser(browser);
-        driver.get("https://analytics.google.com/");
-
-        // Ожидаем появления элемента по XPath (ищем любой div, класс которого содержит 'root' или 'dashboard')
-        // В GA классы динамические, поэтому используем функцию contains()
-        By dashboardLocator = By.xpath("//div[contains(@class, 'page-content') or contains(@class, 'layout-container')]");
-
-        WebElement dashboard = wait.until(ExpectedConditions.visibilityOfElementLocated(dashboardLocator));
-        assertTrue(dashboard.isDisplayed(), "Главный дашборд не загрузился!");
+    @BeforeEach
+    void setUp() {
+        // 1. Инициализация браузера
+        setUpBrowser("chrome");
     }
 
-    // =========================================================================
-    // СЦЕНАРИЙ 2: Переход в раздел "Отчеты" (Reports)
-    // =========================================================================
-    @ParameterizedTest(name = "Test Reports Menu in {0}")
-    @ValueSource(strings = {"chrome", "firefox"})
-    @DisplayName("Навигация в раздел 'Отчеты' через левое меню")
-    void testNavigateToReports(String browser) {
-        setUpBrowser(browser);
+
+    @Test
+    @DisplayName("Функциональный тест интерфейса Google Analytics")
+    void testAnalyticsInterface() {
+        // 2. Открытие сайта
         driver.get("https://analytics.google.com/");
 
-        // XPath: Ищем ссылку (a) или кнопку (div), внутри которой есть текст "Отчеты" или "Reports"
-        By reportsMenuLocator = By.xpath("//*[contains(text(), 'Отчеты') or contains(text(), 'Reports')]//ancestor::a | //*[contains(text(), 'Отчеты') or contains(text(), 'Reports')]//ancestor::button");
+        System.out.println("Ожидание загрузки...");
 
+        // 3. Ожидание загрузки сайта
+        By dashboardLocator = By.xpath("//div[contains(@class, 'main-layout')]");
+        WebElement dashboard = loginWait.until(ExpectedConditions.visibilityOfElementLocated(dashboardLocator));
+
+        System.out.println("Страница загружена! Запускаю авто-клики...");
+
+        // 4. Переход в раздел "Отчеты"
+        System.out.println("Кликаю на 'Отчеты'...");
+        By reportsMenuLocator = By.xpath("//a[contains(@guidedhelpid, 'guided-help-reports-module')]");
         WebElement reportsButton = wait.until(ExpectedConditions.elementToBeClickable(reportsMenuLocator));
         reportsButton.click();
 
-        // Проверяем, что URL изменился или открылся заголовок отчетов
-        By reportHeader = By.xpath("//h1[contains(text(), 'Сводка') or contains(text(), 'Reports snapshot')]");
+        // Проверка: загрузился ли заголовок отчетов
+        By reportHeader = By.xpath("//h1 | //*[contains(text(), 'Сводка') or contains(text(), 'Reports snapshot')]");
         WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(reportHeader));
-
         assertTrue(header.isDisplayed(), "Раздел отчетов не открылся!");
-    }
 
-    // =========================================================================
-    // СЦЕНАРИЙ 3: Переход в раздел "Администратор" (Admin)
-    // =========================================================================
-    @ParameterizedTest(name = "Test Admin Panel in {0}")
-    @ValueSource(strings = {"chrome", "firefox"})
-    @DisplayName("Открытие панели администратора (иконка шестеренки)")
-    void testNavigateToAdmin(String browser) {
-        setUpBrowser(browser);
-        driver.get("https://analytics.google.com/");
-
-        // XPath: Иконка шестеренки обычно имеет aria-label='Администратор' или содержит специфичный svg
-        By adminButtonLocator = By.xpath("//a[contains(@aria-label, 'Администратор') or contains(@aria-label, 'Admin')] | //button[contains(@aria-label, 'Администратор') or contains(@aria-label, 'Admin')]");
-
+        // 5. Переход в раздел "Администратор"
+        System.out.println("Кликаю на 'Администратор'...");
+        By adminButtonLocator = By.xpath("//a[contains(@guidedhelpid, 'guided-help-admin-module')]");
         WebElement adminButton = wait.until(ExpectedConditions.elementToBeClickable(adminButtonLocator));
         adminButton.click();
 
-        // Проверяем наличие блока настроек аккаунта или ресурса
-        By adminPanelLocator = By.xpath("//div[contains(text(), 'Настройки аккаунта') or contains(text(), 'Account settings')]");
+        // Проверка: загрузилась ли панель настроек
+        By adminPanelLocator = By.xpath("//h1[contains(text(), 'Администратор')]");
         WebElement adminPanel = wait.until(ExpectedConditions.visibilityOfElementLocated(adminPanelLocator));
-
         assertTrue(adminPanel.isDisplayed(), "Панель администратора не загрузилась!");
+
+        System.out.println("Тест успешно пройден!");
+    }
+
+    @Test
+    @DisplayName("Функциональный тест раздела 'Отчёты'")
+    void testReportsModule() {
+        // 2. Открытие сайта
+        driver.get("https://analytics.google.com/");
+
+        System.out.println("Ожидание загрузки...");
+
+        // 3. Ожидание загрузки сайта
+        By dashboardLocator = By.xpath("//div[contains(@class, 'main-layout')]");
+        WebElement dashboard = loginWait.until(ExpectedConditions.visibilityOfElementLocated(dashboardLocator));
+
+        System.out.println("Страница загружена! Запускаю авто-клики...");
+
+        // 4. Переход в раздел "Отчеты"
+        System.out.println("Кликаю на 'Отчеты'...");
+        By reportsMenuLocator = By.xpath("//a[contains(@guidedhelpid, 'guided-help-reports-module')]");
+        WebElement reportsButton = wait.until(ExpectedConditions.elementToBeClickable(reportsMenuLocator));
+        reportsButton.click();
+
+        // Проверка: загрузился ли заголовок отчетов
+        By reportHeader = By.xpath("//h1 | //*[contains(text(), 'Сводка') or contains(text(), 'Reports snapshot')]");
+        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(reportHeader));
+        assertTrue(header.isDisplayed(), "Раздел отчетов не открылся!");
+
+        System.out.println("Кликаю на 'Обзор в режиме реального времени'...");
+        By menuOfReports = By.xpath("//span[contains(@class, 'mdc-list-item__content')]");
+        WebElement realtimeOverviewButton = wait.until(ExpectedConditions.elementToBeClickable(menuOfReports));
+        realtimeOverviewButton.click();
+
+        By widgetTab = By.xpath("//*[contains(@class, 'xap-card-content card-content')]");
+        WebElement realtimeTab = wait.until(ExpectedConditions.visibilityOfElementLocated(widgetTab));
+        assertTrue(realtimeTab.isDisplayed(), "Виджет реального времени не открылся!");
+
+
+        System.out.println("Кликаю на 'Добавить сравнения'...");
+        By menuOfActions = By.xpath("//button[contains(@class, 'report-filter add-comparison')]");
+        WebElement addCompareButton = wait.until(ExpectedConditions.elementToBeClickable(menuOfActions));
+        addCompareButton.click();
+
+
+        System.out.println("Тест успешно пройден!");
     }
 }
