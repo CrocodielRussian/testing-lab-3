@@ -29,7 +29,11 @@
 == Код
 https://github.com/CrocodielRussian/testing-lab-3
 
-
+== Use-Case диаграмма
+#figure(
+  image("resources/use-case.png", width: 100%),
+  caption: [Use-Case диаграмма]
+)
 
 == Прецеденты
 
