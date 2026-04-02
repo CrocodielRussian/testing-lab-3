@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group = 'web'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.seleniumhq.selenium:selenium-java:4.41.0"
+    testImplementation "org.seleniumhq.selenium:selenium-grid:4.41.0"
+    testImplementation platform("org.junit:junit-bom:6.0.2")
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'com.titusfortner:selenium-logger:2.4.0'
+}
+
+test {
+    useJUnitPlatform()
+}
