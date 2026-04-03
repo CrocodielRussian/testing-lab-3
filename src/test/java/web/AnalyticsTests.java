@@ -53,8 +53,6 @@ public class AnalyticsTests {
 
     @AfterEach
     void tearDown() {
-        // Намеренно оставляем пустым.
-        // Если сделать driver.quit(), браузер закроется, и следующий запуск упадет.
     }
 
     @BeforeEach
@@ -68,16 +66,20 @@ public class AnalyticsTests {
 
 
     @Test
-    @DisplayName("Функциональный тест интерфейса Google Analytics")
-    void testAnalyticsInterface() {
+    @DisplayName("Функциональный тест загрузки главного интерфейса")
+    void testLoadingMainInterface() {
         System.out.println("Ожидание загрузки...");
 
         // 3. Ожидание загрузки сайта
         By dashboardLocator = By.xpath("//div[contains(@class, 'main-layout')]");
         WebElement dashboard = loginWait.until(ExpectedConditions.visibilityOfElementLocated(dashboardLocator));
 
-        System.out.println("Страница загружена! Запускаю авто-клики...");
+        System.out.println("Тест успешно пройден!");
+    }
 
+    @Test
+    @DisplayName("Функциональный тест переключения на панели отчётов")
+    void testLoadingReportsInterface(){
         // 4. Переход в раздел "Отчеты"
         System.out.println("Нажимаю на 'Отчеты'...");
         By reportsMenuLocator = By.xpath("//a[contains(@guidedhelpid, 'guided-help-reports-module')]");
@@ -85,9 +87,16 @@ public class AnalyticsTests {
         reportsButton.click();
 
         // Проверка: загрузился ли заголовок отчетов
-        By reportHeader = By.xpath("//h1 | //*[contains(text(), 'Сводка') or contains(text(), 'Reports snapshot')]");
+        By reportHeader = By.xpath("//h1 | //*[contains(text(), 'Сводка отчетов') or contains(text(), 'Reports snapshot')]");
         WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(reportHeader));
         assertTrue(header.isDisplayed(), "Раздел отчетов не открылся!");
+
+        System.out.println("Тест успешно пройден!");
+    }
+
+    @Test
+    @DisplayName("Функциональный тест переключения на панель администратора")
+    void testLoadingAdminInterface(){
 
         // 5. Переход в раздел "Администратор"
         System.out.println("Нажимаю на 'Администратор'...");
@@ -99,6 +108,7 @@ public class AnalyticsTests {
         By adminPanelLocator = By.xpath("//h1[contains(text(), 'Администратор')]");
         WebElement adminPanel = wait.until(ExpectedConditions.visibilityOfElementLocated(adminPanelLocator));
         assertTrue(adminPanel.isDisplayed(), "Панель администратора не загрузилась!");
+
 
         System.out.println("Тест успешно пройден!");
     }
