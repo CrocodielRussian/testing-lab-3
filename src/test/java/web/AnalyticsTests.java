@@ -61,15 +61,15 @@ public class AnalyticsTests {
     void setUp() {
         // 1. Инициализация браузера
         setUpBrowser("chrome");
+
+        // 2. Открытие сайт
+        driver.get("https://analytics.google.com/");
     }
 
 
     @Test
     @DisplayName("Функциональный тест интерфейса Google Analytics")
     void testAnalyticsInterface() {
-        // 2. Открытие сайта
-        driver.get("https://analytics.google.com/");
-
         System.out.println("Ожидание загрузки...");
 
         // 3. Ожидание загрузки сайта
@@ -107,8 +107,6 @@ public class AnalyticsTests {
     @DisplayName("Функциональный тест раздела 'Отчёты'")
     void testReportsModule() {
         // 2. Открытие сайта
-        driver.get("https://analytics.google.com/");
-
         System.out.println("Ожидание загрузки...");
 
         // 3. Ожидание загрузки сайта
@@ -170,15 +168,12 @@ public class AnalyticsTests {
         By compareLine = By.xpath("//div[contains(text(), '#1')]");
         WebElement topCompare = wait.until(ExpectedConditions.visibilityOfElementLocated(compareLine));
 
-
         System.out.println("Тест успешно пройден!");
     }
 
     @Test
     @DisplayName("Функциональный тест раздела 'Администратор'")
     void testAdminModule() {
-        driver.get("https://analytics.google.com/");
-
         System.out.println("Ожидание загрузки...");
 
         // 3. Ожидание загрузки сайта
@@ -230,7 +225,7 @@ public class AnalyticsTests {
 
         WebElement urlEvent = wait.until(
                 ExpectedConditions.presenceOfElementLocated(
-                        By.xpath("//input[contains(@class, 'pt-url-based-event-selector-field-input')]")
+                        By.xpath("//input[contains(@class, 'pt-event-trigger-url-input')]")
                 )
         );
 
@@ -252,5 +247,22 @@ public class AnalyticsTests {
         By eventCreateMenuLocator = By.xpath("//button[contains(@class, 'pt-create-button')]");
         WebElement createButton = wait.until(ExpectedConditions.elementToBeClickable(eventCreateMenuLocator));
         createButton.click();
+    }
+
+    @Test
+    @DisplayName("Тест захода на страницу администратора через URL")
+    void testAlternativeWayAdminModule() {
+        String currentUrl = driver.getCurrentUrl();
+        String newUrl = currentUrl.replace("reports/intelligenthome", "admin");
+        driver.get(newUrl);
+
+        System.out.println("Ожидание загрузки...");
+
+        // 3. Ожидание загрузки сайта
+        By adminPanelLocator = By.xpath("//h1[contains(text(), 'Администратор')]");
+        WebElement adminPanel = wait.until(ExpectedConditions.visibilityOfElementLocated(adminPanelLocator));
+        assertTrue(adminPanel.isDisplayed(), "Панель администратора не загрузилась!");
+
+        System.out.println("Тест успешно пройден!");
     }
 }
