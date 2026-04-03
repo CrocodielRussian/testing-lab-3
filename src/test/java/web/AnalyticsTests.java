@@ -244,7 +244,7 @@ public class AnalyticsTests {
                 urlEvent
         );
 
-        titleEvent.sendKeys("google.com");
+        urlEvent.sendKeys("google.com");
 
 
         System.out.println("Нажимаю на 'Создать'...");
