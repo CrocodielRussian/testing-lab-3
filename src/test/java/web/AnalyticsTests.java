@@ -18,6 +18,7 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AnalyticsTests {
 
     private WebDriver driver;
@@ -28,21 +29,21 @@ public class AnalyticsTests {
         if (browser.equals("chrome")) {
             ChromeOptions options = new ChromeOptions();
 
-            // Подключаемся к браузеру, который мы заранее открыли через Терминал
             options.setExperimentalOption("debuggerAddress", "127.0.0.1:9999");
-
             driver = new ChromeDriver(options);
 
-        }
-        else if (browser.equals("firefox")) {
+        } else if (browser.equals("firefox")) {
             FirefoxOptions options = new FirefoxOptions();
 
-            options.addArguments("-profile");
-            options.addArguments("C:\\selenium-firefox-profile");
+            options.addPreference("privacy.trackingprotection.enabled", false);
+            options.addPreference("browser.contentblocking.category", "standard");
 
-            driver = new FirefoxDriver(options);
+            try {
+                driver = new org.openqa.selenium.remote.RemoteWebDriver(new java.net.URL("http://localhost:4444"), options);
+            } catch (java.net.MalformedURLException e) {
+                throw new RuntimeException("Неверный URL для RemoteWebDriver: " + e.getMessage());
+            }
         }
-
 
         // Стандартное ожидание для элементов страницы (15 сек)
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
@@ -55,15 +56,17 @@ public class AnalyticsTests {
     void tearDown() {
     }
 
-    @BeforeEach
-    void setUp() {
-        // 1. Инициализация браузера
-        setUpBrowser("chrome");
-
-        // 2. Открытие сайт
-        driver.get("https://analytics.google.com/");
+    @BeforeAll
+    void setUpAll() {
+        setUpBrowser("firefox");
     }
 
+    @BeforeEach
+    void setUp() {
+        driver.get("https://analytics.google.com/");
+        By dashboardLocator = By.xpath("//div[contains(@class, 'main-layout')]");
+        WebElement dashboard = loginWait.until(ExpectedConditions.visibilityOfElementLocated(dashboardLocator));
+    }
 
     @Test
     @DisplayName("Функциональный тест загрузки главного интерфейса")
