@@ -8,7 +8,6 @@
 #set text(font: "Times New Roman", size: 12pt, lang: "ru")
 #set par(justify: true)
 #set heading(numbering: "1.1.")
-#set figure(supplement: "Таблица")
 #show link: underline
 
 #show heading: it => [
