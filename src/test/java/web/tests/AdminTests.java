@@ -77,8 +77,8 @@ public class AdminTests extends BaseTest {
     }
 
     @Test
-    @DisplayName("Проверка невозможности создать тест без url")
-    void testImpossibleCreateEventWithoutUrl() {
+    @DisplayName("Проверка невозможности создать тест без названия")
+    void testImpossibleCreateEventWithoutTitle() {
         navigateToAdmin();
 
         // Переход в События
@@ -103,7 +103,7 @@ public class AdminTests extends BaseTest {
         By createLocator = By.xpath("//button[contains(@class, 'pt-create-button')]");
         wait.until(ExpectedConditions.elementToBeClickable(createLocator)).click();
 
-        By errorTitle = By.xpath("//*[@id=\"mat-mdc-error-1\"]");
+        By errorTitle = By.xpath("//*[@id=\"mat-mdc-error-0\"]");
         WebElement errorTitleText = wait.until(
                 ExpectedConditions.visibilityOfElementLocated(errorTitle)
         );
@@ -116,7 +116,7 @@ public class AdminTests extends BaseTest {
 
     @Test
     @DisplayName("Проверка невозможности создать тест без названия")
-    void testImpossibleCreateEventWithoutTitle() {
+    void testImpossibleCreateEventWithoutUrl() {
         navigateToAdmin();
 
         // Переход в События
@@ -142,8 +142,8 @@ public class AdminTests extends BaseTest {
         By createLocator = By.xpath("//button[contains(@class, 'pt-create-button')]");
         wait.until(ExpectedConditions.elementToBeClickable(createLocator)).click();
 
-        By errorTitle = By.xpath("//*[@id=\"mat-mdc-error-0\"]");
-        WebElement errorTitleText = wait.until(
+        By errorTitle = By.xpath("//*[@id=\"mat-mdc-error-1\"]");
+            WebElement errorTitleText = wait.until(
                 ExpectedConditions.visibilityOfElementLocated(errorTitle)
         );
 
