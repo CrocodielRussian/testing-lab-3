@@ -113,7 +113,6 @@ public class ReportsTests extends BaseTest {
         wait.until(ExpectedConditions.elementToBeClickable(menuOfActions)).click();
 
         By applyLocator = By.xpath("//button[contains(@class, 'mat-mdc-button-disabled')]");
-        wait.until(ExpectedConditions.elementToBeClickable(applyLocator)).click();
 
         WebElement applyLocatorButton = wait.until(
                 ExpectedConditions.visibilityOfElementLocated(applyLocator)
